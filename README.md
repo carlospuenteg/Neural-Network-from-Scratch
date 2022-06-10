@@ -13,6 +13,7 @@
 * [10. Accuracy](#10-accuracy)
 * [11. All together](#11-all-together)
 * [12. Complete Neural Network](#12-complete-neural-network)
+* [13. Full Script](#13-full-script)
 
 
 
@@ -472,6 +473,220 @@ accuracy = np.mean(predictions == y)
 
 ## 12. Complete Neural Network 
 
+### Imports
+
+```python
+import numpy as np;
+import matplotlib.pyplot as plt
+import os
+from Activation_Funcs import *
+from Dense_Layer import *
+from Loss import *
+from Polynomial import P
+```
+
+### Polynomials to be used
+
+```python
+pols = (P(3, 1), P(-2, -3), P(4, -1, -2), P(-1, 2, 0), P(3, 0, 2), P(1, -1, 3, 2), P(-3, 1, 0, 0), 
+P(2, 0, 1, -2), P(5, -3, 1, -2, 2), P(-2, -3, 0, 4, 1), P(1, 0, -4, 2, 3), P(1, 0, 0, 0, -2))
+```
+
+#### Plot the polynomials
+
+```python
+def plot_polynomials(pols, ran=(-2,2), n_samples=100):
+    # 100 linearly spaced numbers
+    x = np.linspace(ran[0],ran[1],n_samples)
+
+    # setting the axes at the centre
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.spines['left'].set_position('center')
+    ax.spines['bottom'].set_position('center')
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+
+    # plot the functions
+    for pol in pols:
+        y = pol.p(x)
+        plt.plot(x, y, label=str(pol))
+
+    plt.legend(loc='upper left')
+
+    # show the plot
+    plt.show()
+```
+
+```python
+# Example
+plot_polynomials(
+    pols=(P(1,0,1), P(-2, 3)),
+    ran=(-1,1),
+    n_samples=100
+)
+```
+
+<img src=readme-assets/pols-plot.png width=400>
+
+
+### Train the neural network
+
+```python
+def train(n_samples=100, n_epochs=100000, learn_rate=0.0005, pols=pols):
+    n_classes = len(pols)
+
+    X, y = generate_dataset(n_samples, pols)
+    # plot_dataset(X, y)
+
+    layer1 = Dense_Layer(n_inputs= 2,        n_neurons = n_classes)
+    layer2 = Dense_Layer(n_inputs=n_classes, n_neurons = n_classes)
+    act1 = Activation_ReLU()
+    act2 = Activation_Softmax()
+    loss_func = Loss_CategoricalCrossentropy()
+
+    lowest_loss = np.inf
+    b_weights_l1 = layer1.weights.copy()
+    b_biases_l1  = layer1.biases.copy()
+    b_weights_l2 = layer2.weights.copy()
+    b_biases_l2  = layer2.biases.copy()
+
+    for iter in range(n_epochs):
+        # Randomize weights and biases
+        layer1.weights +=   learn_rate * np.random.randn(layer1.weights.shape[0], layer1.weights.shape[1])
+        layer1.biases +=    learn_rate * np.random.randn(layer1.biases.shape[0], layer1.biases.shape[1])
+        layer2.weights +=   learn_rate * np.random.randn(layer2.weights.shape[0], layer2.weights.shape[1])
+        layer2.biases +=    learn_rate * np.random.randn(layer2.biases.shape[0], layer2.biases.shape[1])
+
+        # Forward propagation
+        layer1.forward(X)
+        act1.forward(layer1.output)
+        layer2.forward(act1.output)
+        act2.forward(layer2.output)
+
+        # Calculate loss
+        loss = loss_func.calculate(act2.output, y)
+
+        # Results. If [0 0 1 0 0] it will return 2. argmax returns the index of the maximum value in each array
+        predictions = np.argmax(act2.output, axis=1)
+
+        # Accuracy of the results compared to the true values
+        accuracy = np.mean(predictions == y)
+        
+        if loss < lowest_loss:
+            print(f"New set of weights and biases found, iter: {iter}, loss: {loss}, acc: {accuracy}")
+            lowest_loss = loss
+            b_weights_l1 = layer1.weights.copy()
+            b_biases_l1 = layer1.biases.copy()
+            b_weights_l2 = layer2.weights.copy()
+            b_biases_l2 = layer2.biases.copy()
+        else:
+            layer1.weights = b_weights_l1.copy()
+            layer1.biases = b_biases_l1.copy()
+            layer2.weights = b_weights_l2.copy()
+            layer2.biases = b_biases_l2.copy()
+
+    save_best(layer1, layer2, loss, accuracy)
+```
+
+#### Example
+
+```python
+train(
+    n_samples=100, 
+    n_epochs=1000000, 
+    learn_rate=0.0005,
+    pols=pols
+)
+```
+
+```bash
+# Training...
+New set of weights and biases found, iter: 0, loss: 2.4899427650572044, acc: 0.11333333333333333
+New set of weights and biases found, iter: 3, loss: 2.489925294343727, acc: 0.11083333333333334
+New set of weights and biases found, iter: 5, loss: 2.4899040051678587, acc: 0.0975
+New set of weights and biases found, iter: 6, loss: 2.4897983233720917, acc: 0.10833333333333334
+...
+New set of weights and biases found, iter: 998633, loss: 0.8934836266737981, acc: 0.64
+New set of weights and biases found, iter: 998652, loss: 0.8934751585906433, acc: 0.6416666666666667
+New set of weights and biases found, iter: 998792, loss: 0.8934622116619763, acc: 0.6391666666666667
+New set of weights and biases found, iter: 998841, loss: 0.8934603025209412, acc: 0.6416666666666667
+...
+New best loss: 0.6669996962075785, accuracy: 77.83%
+```
+
+#### Save the best weights and biases
+
+```python
+def save_best(layer1, layer2, loss, accuracy):
+    if not os.path.exists('w&b'):
+        os.makedirs('w&b')
+    if not os.path.exists('w&b/loss.npy') or loss < np.load('w&b/loss.npy'):
+        np.save('w&b/weights_l1.npy', layer1.weights)
+        np.save('w&b/biases_l1.npy', layer1.biases)
+        np.save('w&b/weights_l2.npy', layer2.weights)
+        np.save('w&b/biases_l2.npy', layer2.biases)
+        np.save('w&b/loss.npy', loss)
+        np.save('w&b/accuracy.npy', accuracy)
+        print(f"\nNew best loss: {loss}, accuracy: {accuracy*100:.2f}%")
+```
+
+
+### Test the neural network
+
+```python
+def test(x,y):
+    input = [x, y]
+    layer1 = Dense_Layer(n_inputs = 2,  n_neurons = 10)
+    layer2 = Dense_Layer(n_inputs = 10, n_neurons = 10)
+    act1 = Activation_ReLU()
+    act2 = Activation_Softmax()
+
+    layer1.weights = np.load('w&b/weights_l1.npy')
+    layer1.biases  = np.load('w&b/biases_l1.npy')
+    layer2.weights = np.load('w&b/weights_l2.npy')
+    layer2.biases  = np.load('w&b/biases_l2.npy')
+    loss = np.load('w&b/loss.npy')
+
+    layer1.forward(input)
+    act1.forward(layer1.output)
+    layer2.forward(act1.output)
+    act2.forward(layer2.output)
+
+    print(f"Overall loss: {loss}")
+
+    predictions = act2.output[0].argsort()[::-1]
+    print(f"Sorted predictions: {predictions}")
+
+    prediction = predictions[0]
+    odds = act2.output[0][prediction]
+    return f"\nPolynomial {prediction} ({odds*100:.2f}%)\n"
+```
+
+#### Example
+
+```python
+print(
+    test(-0.55, pols[9].p(-0.55))
+)
+```
+
+```bash
+Overall loss: 0.6669996962075785
+Overall accuracy: 77.83%
+Sorted predictions: [ 9  2  0 10 11  3  5  1  4  7  6  8]
+
+Polynomial 9 (65.92%)
+```
+
+
+
+## 13. Full Script
+
+Link to the script -> [neural-net.py](neural-net.py)
+
 ```python
 import numpy as np;
 import matplotlib.pyplot as plt
@@ -511,7 +726,7 @@ def plot_dataset(X, y, title='Dataset'):
 
 #------------------------------------------------------------------------------
 
-def plot_polynomial(pols, ran=(-2,2), n_samples=100):
+def plot_polynomials(pols, ran=(-2,2), n_samples=100):
     # 100 linearly spaced numbers
     x = np.linspace(ran[0],ran[1],n_samples)
 
@@ -621,6 +836,7 @@ def test(x,y):
     layer2.weights = np.load('w&b/weights_l2.npy')
     layer2.biases  = np.load('w&b/biases_l2.npy')
     loss = np.load('w&b/loss.npy')
+    accuracy = np.load('w&b/accuracy.npy')
 
     layer1.forward(input)
     act1.forward(layer1.output)
@@ -628,6 +844,7 @@ def test(x,y):
     act2.forward(layer2.output)
 
     print(f"Overall loss: {loss}")
+    print(f"Overall accuracy: {accuracy*100:.2f}%")
 
     predictions = act2.output[0].argsort()[::-1]
     print(f"Sorted predictions: {predictions}")
@@ -637,12 +854,14 @@ def test(x,y):
     return f"\nPolynomial {prediction} ({odds*100:.2f}%)\n"
 
 #-----------------------------------------------------------------------------------
+"""
 train(
     n_samples=100, 
-    n_epochs=1000000, 
+    n_epochs=10000, 
     learn_rate=0.0005,
+    pols=pols
 )
-
+"""
 print(
     test(-0.55, pols[9].p(-0.55))
 )

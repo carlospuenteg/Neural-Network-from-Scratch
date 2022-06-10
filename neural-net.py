@@ -36,7 +36,7 @@ def plot_dataset(X, y, title='Dataset'):
 
 #------------------------------------------------------------------------------
 
-def plot_polynomial(pols, ran=(-2,2), n_samples=100):
+def plot_polynomials(pols, ran=(-2,2), n_samples=100):
     # 100 linearly spaced numbers
     x = np.linspace(ran[0],ran[1],n_samples)
 
@@ -146,6 +146,7 @@ def test(x,y):
     layer2.weights = np.load('w&b/weights_l2.npy')
     layer2.biases  = np.load('w&b/biases_l2.npy')
     loss = np.load('w&b/loss.npy')
+    accuracy = np.load('w&b/accuracy.npy')
 
     layer1.forward(input)
     act1.forward(layer1.output)
@@ -153,6 +154,7 @@ def test(x,y):
     act2.forward(layer2.output)
 
     print(f"Overall loss: {loss}")
+    print(f"Overall accuracy: {accuracy*100:.2f}%")
 
     predictions = act2.output[0].argsort()[::-1]
     print(f"Sorted predictions: {predictions}")
@@ -162,12 +164,14 @@ def test(x,y):
     return f"\nPolynomial {prediction} ({odds*100:.2f}%)\n"
 
 #-----------------------------------------------------------------------------------
+"""
 train(
     n_samples=100, 
-    n_epochs=1000000, 
+    n_epochs=10000, 
     learn_rate=0.0005,
+    pols=pols
 )
-
+"""
 print(
     test(-0.55, pols[9].p(-0.55))
 )
