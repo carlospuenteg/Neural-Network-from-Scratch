@@ -153,7 +153,7 @@ def plot_dataset(X, y, title='Dataset'):
 
 ## 5. Create the Dense Layer
 
-### What is a Dense Layer?
+### What is a Dense Layer?
 A dense layer is a layer that is deeply connected with its preceding layer (each neuron receives input from all the neurons in the preceding layer).
 
 <img src=readme-assets/neural-network.png width=500>
@@ -172,7 +172,7 @@ A dense layer is a layer that is deeply connected with its preceding layer (each
 | inputs | The inputs to the layer. | `X`
 
 ```python
-class layer:
+class Dense_Layer:
     # Initialize the weights and bias
     def __init__(self, n_inputs, n_neurons):
         # Random (with standard normal distribution) initial weights. Multiplied by 0.1 to have small values
@@ -197,7 +197,7 @@ layer1 = Dense_Layer(n_inputs=2, n_neurons=12)
 layer1.forward(X)
 ```
 
-#### Layer 1 weights
+#### Layer 1 weights
 The random weights are a matrix of `n_inputs x n_neurons` (2x12).
 ```python
 [[ 0.03528166 -0.01527744 -0.12986867  0.12760753  0.13250141  0.02053326
@@ -206,13 +206,13 @@ The random weights are a matrix of `n_inputs x n_neurons` (2x12).
   -0.10068318  0.16815767 -0.07922867 -0.05316059  0.03658488  0.12978253]]
 ```
 
-#### Layer 1 biases
+#### Layer 1 biases
 The biases are a matrix of `1 x n_neurons` (1x12).
 ```python
 [[0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]]
 ```
 
-#### Layer 1 output
+#### Layer 1 output
 The output of the layer is a matrix of `n_samples x n_neurons` (100x12).
 ```python
 [[ 0.20937075 -0.03492186  0.02718487 ... -0.07126449  0.05085822 0.18215744]
@@ -232,7 +232,7 @@ It leaves the positive inputs unchanged and transforms the negative inputs into 
 
 ### Arguments
 
-#### `forward` (Forward propagation)
+#### `forward` (Forward propagation)
 | Argument | Description | Example |
 | -------- | ----------- | ------- |
 | `inputs` | The inputs to be transformed. | `layer1.output`
@@ -256,7 +256,7 @@ act1 = Activation_ReLU()
 act1.forward(layer1.output)
 ```
 
-#### Layer 1 output (before ReLU)
+#### Layer 1 output (before ReLU)
 The output of the layer is a matrix of `n_samples x n_neurons` (100x12).
 ```python
 [[ 0.20937075 -0.03492186  0.02718487 ... -0.07126449  0.05085822 0.18215744]
@@ -265,7 +265,7 @@ The output of the layer is a matrix of `n_samples x n_neurons` (100x12).
  [-0.32540249  0.0547511  -0.03543965 ...  0.11146536 -0.08045569 -0.28900613]]
 ```
 
-#### Layer 1 output (after ReLU)
+#### Layer 1 output (after ReLU)
 The output of the layer is a matrix of `n_samples x n_neurons` (100x12).
 ```python
 [[0.20937075 0.         0.02718487 ... 0.         0.05085822 0.18215744]
@@ -283,7 +283,7 @@ The Softmax activation function is used to transform the outputs of the previous
 
 ### Arguments
 
-#### `forward` (Forward propagation)
+#### `forward` (Forward propagation)
 | Argument | Description | Example |
 | -------- | ----------- | ------- |
 | `inputs` | The inputs to be transformed. | `layer2.output`
@@ -317,7 +317,7 @@ act2 = Activation_Softmax()
 act2.forward(layer2.output)
 ```
 
-#### Layer 2 weights
+#### Layer 2 weights
 The random weights are a matrix of `n_inputs x n_neurons` (12x12).
 ```python
 [[ 0.04811151  0.27593551 -0.0074668   0.02587164  0.02756007  0.14350494
@@ -327,13 +327,13 @@ The random weights are a matrix of `n_inputs x n_neurons` (12x12).
   -0.04012978 -0.03166553  0.05969065 -0.09872867 -0.04012347 -0.08000825]]
 ```
 
-#### Layer 2 biases
+#### Layer 2 biases
 The biases are a matrix of `1 x n_neurons` (1x12).
 ```python
 [[0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]]
 ```
 
-#### Layer 2 output (before Softmax)
+#### Layer 2 output (before Softmax)
 The output of the layer is a matrix of `n_samples x n_neurons` (100x12).
 ```python
 [[-0.01228636  0.0526258   0.03871606 ...  0.00462124  0.04428541 -0.01437666]
@@ -360,7 +360,7 @@ The Categorical Cross-Entropy Loss function is used to calculate the loss betwee
 
 ### Arguments
 
-#### `forward` (Forward propagation)
+#### `forward` (Forward propagation)
 | Argument | Description | Example |
 | -------- | ----------- | ------- |
 | `y_pred` | The calculated predictions. | `act2.output` |
