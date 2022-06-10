@@ -62,7 +62,7 @@ def plot_polynomials(pols, ran=(-2,2), n_samples=100):
 
 #-----------------------------------------------------------------------------------
 
-def save_best(layer1, layer2, loss, accuracy):
+def save_best(layer1, layer2, loss, accuracy, X, y):
     if not os.path.exists('w&b'):
         os.makedirs('w&b')
     if not os.path.exists('w&b/loss.npy') or loss < np.load('w&b/loss.npy'):
@@ -72,11 +72,13 @@ def save_best(layer1, layer2, loss, accuracy):
         np.save('w&b/biases_l2.npy', layer2.biases)
         np.save('w&b/loss.npy', loss)
         np.save('w&b/accuracy.npy', accuracy)
+        np.save('w&b/X.npy', X)
+        np.save('w&b/y.npy', y)
         print(f"\nNew best loss: {loss}, accuracy: {accuracy*100:.2f}%")
 
 #-----------------------------------------------------------------------------------
 
-def train(n_samples=100, n_epochs=100000, learn_rate=0.0005, pols=pols):
+def train(n_samples=100, n_epochs=100000, learn_rate=0.001, pols=pols):
     n_classes = len(pols)
 
     X, y = generate_dataset(n_samples, pols)
@@ -129,7 +131,7 @@ def train(n_samples=100, n_epochs=100000, learn_rate=0.0005, pols=pols):
             layer2.weights = b_weights_l2.copy()
             layer2.biases = b_biases_l2.copy()
 
-    save_best(layer1, layer2, loss, accuracy)
+    save_best(layer1, layer2, loss, accuracy, X, y)
 
 #-----------------------------------------------------------------------------------
 
@@ -164,14 +166,15 @@ def test(x,y):
     return f"\nPolynomial {prediction} ({odds*100:.2f}%)\n"
 
 #-----------------------------------------------------------------------------------
-"""
+
 train(
     n_samples=100, 
-    n_epochs=10000, 
-    learn_rate=0.0005,
+    n_epochs=1000000, 
+    learn_rate=0.001,
     pols=pols
 )
 """
 print(
-    test(-0.55, pols[9].p(-0.55))
+    test(3, pols[7].p(3))
 )
+"""
